@@ -17,7 +17,7 @@ In order to achieve end-to-end software update security, TUF requires the signin
 
 Key management has been a major concern for TUF adoption. Under a typical deployment, the root role must be signed by some threshold of offline keys. Similarly, keys of Targets roles are often held offline by developers and used to sign release metadata. Snapshot role keys are sometimes held online, and Timestamp roles keys are mostly held online so that automated processes (such as GitHub Actions) are able to sign metadata without human interaction.
 
-Online keys are often kept in some kind of Key Management Service against which the signing processes must authenticate in order to call the signing operation. In other cases, signing keys are stored in the CI system itself (e.g. GitHub Action's Secrets). These approaches but both require the setup, monitoring and maintenance, and are barrier to TUF adoption because even in medium sized organisations, many different teams must be coordinated to achieve the necessary access and approvals. They also introduce additional attack vectors on the storage and access of the keys.
+Online keys are often kept in some kind of Key Management Service against which the signing processes must authenticate in order to call the signing operation. In other cases, signing keys are stored in the CI system itself (e.g. GitHub Action's Secrets). These approaches but require the setup, monitoring and maintenance of secrets, and are a barrier to TUF adoption because even in medium sized organisations many different teams must be coordinated to achieve the necessary access and approvals. They also introduce additional attack vectors on the storage and access of the keys.
 
 Moreover, as discussed in detail in [TAP-18: Ephemeral identity verification using sigstore's Fulcio for TUF developer key management](tap18.md), developers struggle to manage their own keys securely for signing TUF targets' metadata. Similarly, this TAP also proposes that developers should be able to sign TUF target metadata using ephemeral signing keys based on their OIDC identities, but using OpenPubkey instead of Sigstore's Fulcio.
 
@@ -25,7 +25,7 @@ When signing TUF metadata, it's obviously important that the signatures be verif
 
 It's worth noting that currently there is no way to attribute an expired OIDC public key to the OIDC provider.
 
-This TAP proposes a mechanism for not only signing TUF metadata with OpenPubkey by keeping a log of historical OIDC public keys so that metadata signed under those keys can be verified after key rotation.
+This TAP proposes both a mechanism for signing TUF metadata with OpenPubkey and keeping a log of historical OIDC public keys so that metadata signed under those keys can be verified after key rotation.
 
 # Specification
 
@@ -319,7 +319,7 @@ TODO:
 * Can we use GQ signatures safely for the public key log? I think so. If not, full OpenPubkey signing would change the flow slightly, but should be fixable by adding both OIDC public keys to the CIC
 
 ## Implementation options considered
-1. Use a delegated target role to keep public keys manage OIDC public keys
+1. Use a delegated target role to manage the OIDC public keys log
    * **Rejected**: using target files for TUF metadata signature verification breaks a core TUF constraint that signatures should be verified before taget files are retrieved and processed
 2. Use offline keys to manage OIDC public keys, and use OpenPubkey just for target roles (similar to per TAP-18)
    * **Rejected**: this doesn't reduce the complexity of setting up and managing TUF sufficiently to make this TAP of sufficient value to pursue as is, but might make another good TAP?
